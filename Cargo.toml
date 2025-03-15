@@ -1,0 +1,8 @@
+[package]
+name = "swarmParticle"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+piston_window = "0.128.0" # graphical interface, windows and 2D drawing
+rand = "0.8.5" # for random particle generation

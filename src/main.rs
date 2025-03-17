@@ -17,7 +17,7 @@ use rand::Rng;
 // Global dimensions for the map
 const DIMENSIONS: (f64, f64) = (700.0, 700.0); // 300x300 units
 const CELL_SIZE: f64 = 5.0; // Size of each cell in the map matrix
-const UPDATE_INTERVAL: Duration = Duration::from_micros(100); // Update every 0.001 seconds
+const UPDATE_INTERVAL: Duration = Duration::from_millis(1); // Update every 1 seconds
 
 /// Obstacle structure
 struct Obstacle {
@@ -88,54 +88,18 @@ fn main() {
     // Generate a random map with obstacles and create the map matrix
     let (_map, map_matrix) = generate_random_map(100);
 
-    let mut swarm = Swarm {
-        drone_list: Vec::new()
-    };
-
-    let mut rng = rand::thread_rng();
     let mut last_update = Instant::now();
 
-    // Create three drones
-    for id in 0..3 {
-        let color = match id {
-            0 => [1.0, 0.0, 0.0],  // Red
-            1 => [0.0, 0.0, 1.0],  // Blue
-            2 => [0.0, 1.0, 0.0],  // Green
-            _ => [1.0, 1.0, 1.0],  // White (shouldn't occur)
-        };
+    // Create drones with particles
+    let particle_count = 1000;
+    let drone1 = Drone::new(0, [1.0, 0.0, 0.0], particle_count);
+    let drone2 = Drone::new(1, [0.0, 1.0, 0.0], particle_count);
+    let drone3 = Drone::new(2, [0.0, 0.0, 1.0], particle_count);
 
-        // Create particles
-        let particles = (0..1000).map(|_| Worker {
-            position_estimate: (
-                rng.gen_range(0.0..DIMENSIONS.0),
-                rng.gen_range(0.0..DIMENSIONS.1),
-                rng.gen_range(0.0..2.0 * std::f64::consts::PI)
-            ),
-            sensor_reach: 50.0,
-            sensor_reading: Vec::new(),
-            weight: 1.0,
-        }).collect();
+    let drone_list = vec![drone1, drone2, drone3];
 
-        // Create the drone
-        let drone = Drone {
-            id,
-            color,
-            worker: Worker {
-                position_estimate: (
-                    rng.gen_range(0.0..DIMENSIONS.0),
-                    rng.gen_range(0.0..DIMENSIONS.1),
-                    rng.gen_range(0.0..2.0 * std::f64::consts::PI)
-                ),
-                sensor_reach: 50.0,
-                sensor_reading: Vec::new(),
-                weight: 1.0,
-            },
-            particles,
-            relative_poses: Vec::new(),
-        };
-
-        swarm.drone_list.push(drone);
-    }
+    // Initialize the swarm with the drone list
+    let mut swarm = Swarm { drone_list };
 
     // Main loop
     while let Some(e) = window.next() {
